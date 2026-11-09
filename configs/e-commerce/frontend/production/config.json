@@ -1,0 +1,15 @@
+{
+  "features": {
+    "newHomepage": true,
+    "buyNow": true,
+    "wishlist": false,
+    "newCheckout": false
+  },
+  "ui": {
+    "bannerText": "Big Fashion Sale",
+    "showPromotionalBanner": true
+  },
+  "limits": {
+    "maxCartItems": 10
+  }
+}
