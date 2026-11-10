@@ -10,6 +10,6 @@
     "showPromotionalBanner": true
   },
   "limits": {
-    "maxCartItems": 10
+    "maxCartItems": 20
   }
 }
