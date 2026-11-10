@@ -42,7 +42,9 @@ jobs:
             files.forEach(file => {
               const filePath = path.join(dir, file);
               const stat = fs.statSync(filePath);
-              if (filePath.includes(".git") || filePath.includes("node_modules")) return;
+              
+              // 🛑 ADD THESE EXCLUSIONS HERE
+              if (filePath.includes(".git") || filePath.includes("node_modules") || file === "package-lock.json" || file === "wrangler.jsonc") return;
               
               if (stat.isDirectory()) {
                 getConfigFiles(filePath, fileList);
