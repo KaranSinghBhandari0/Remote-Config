@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "format": "prettier --write \"**/*.{json,jsonc,md}\"",
-    "lint:format": "prettier --check \"**/*.{json,jsonc,md}\""
+    "lint:format": "prettier --check \"**/*.{json,jsonc,md}\"",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
     "prettier": "^3.0.0"
   }
 }
