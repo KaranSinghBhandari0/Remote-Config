@@ -87,9 +87,9 @@ jobs:
 
   deploy:
     name: Deploy to Production
-    needs: validate-and-lint  # 🔒 THIS BLOCKS DEPLOYMENT IF VALIDATION FAILS
+    needs: validate-and-lint  
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # Only deploy when pushing to main
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout repository
@@ -100,4 +100,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy configs --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --verbose
+          command: pages deploy configs --project-name=remote-config --verbose
