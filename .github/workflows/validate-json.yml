@@ -82,3 +82,20 @@ jobs:
             console.log("\n✨ All configuration files are valid and well-formed!");
           }
           '
+
+  deploy:
+    name: Deploy to Production
+    needs: validate-and-lint  # 🔒 THIS BLOCKS DEPLOYMENT IF VALIDATION FAILS
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # Only deploy when pushing to main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy configs --project-name=YOUR_PROJECT_NAME
