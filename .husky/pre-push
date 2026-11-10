@@ -1,0 +1,64 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push validation checks..."
+
+# 1. Check Prettier formatting
+npm run lint:format
+if [ $? -ne 0 ]; then
+  echo "❌ Prettier check failed! Run 'npm run format' to fix formatting issues before pushing."
+  exit 1
+fi
+
+# 2. Run your JSON/JSONC syntax validator
+node -e '
+const fs = require("fs");
+const path = require("path");
+
+function stripComments(str) {
+  return str.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*/g, "$1");
+}
+
+function getConfigFiles(dir, fileList = []) {
+  const files = fs.readdirSync(dir);
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    if (filePath.includes(".git") || filePath.includes("node_modules") || file === "package-lock.json" || file === "wrangler.jsonc") return;
+    
+    if (stat.isDirectory()) {
+      getConfigFiles(filePath, fileList);
+    } else {
+      const ext = path.extname(file);
+      if (ext === ".json" || ext === ".jsonc") {
+        fileList.push(filePath);
+      }
+    }
+  });
+  return fileList;
+}
+
+const configFiles = getConfigFiles(".");
+let hasError = false;
+
+configFiles.forEach(file => {
+  try {
+    const content = fs.readFileSync(file, "utf8");
+    const parseContent = file.endsWith(".jsonc") ? stripComments(content) : content;
+    JSON.parse(parseContent);
+  } catch (err) {
+    console.error(`❌ Syntax error in: ${file} -> ${err.message}`);
+    hasError = true;
+  }
+});
+
+if (hasError) {
+  console.error("❌ JSON validation failed. Push aborted.");
+  process.exit(1);
+} else {
+  console.log("✨ All local checks passed successfully!");
+}
+'
+if [ $? -ne 0 ]; then
+  exit 1
+fi
