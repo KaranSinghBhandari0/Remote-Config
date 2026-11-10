@@ -1,3 +1,5 @@
+name: ""
+
 on:
   push:
     branches: ["**"]  # Runs on pushes to ANY branch
