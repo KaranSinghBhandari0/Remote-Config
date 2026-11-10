@@ -1,0 +1,84 @@
+name: Validate and Lint Configs
+
+on:
+  push:
+    branches: ["**"]  # Runs on pushes to ANY branch
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  validate-and-lint:
+    name: Prettier & JSON Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Prettier
+        run: npm install --save-dev prettier
+
+      - name: Check Formatting with Prettier
+        run: npx prettier --check "**/*.{json,jsonc,md}"
+
+      - name: Validate JSON & JSONC Syntax
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+
+          // Helper to strip comments from JSONC files
+          function stripComments(str) {
+            return str.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*/g, "$1");
+          }
+
+          function getConfigFiles(dir, fileList = []) {
+            const files = fs.readdirSync(dir);
+            files.forEach(file => {
+              const filePath = path.join(dir, file);
+              const stat = fs.statSync(filePath);
+              if (filePath.includes(".git") || filePath.includes("node_modules")) return;
+              
+              if (stat.isDirectory()) {
+                getConfigFiles(filePath, fileList);
+              } else {
+                const ext = path.extname(file);
+                if (ext === ".json" || ext === ".jsonc") {
+                  fileList.push(filePath);
+                }
+              }
+            });
+            return fileList;
+          }
+
+          const configFiles = getConfigFiles(".");
+          let hasError = false;
+
+          console.log(`Found ${configFiles.length} configuration file(s) to validate.\n`);
+
+          configFiles.forEach(file => {
+            try {
+              const content = fs.readFileSync(file, "utf8");
+              // If it is jsonc, strip comments so JSON.parse does not fail
+              const parseContent = file.endsWith(".jsonc") ? stripComments(content) : content;
+              
+              JSON.parse(parseContent);
+              console.log(`✅ Valid: ${file}`);
+            } catch (err) {
+              console.error(`❌ Invalid syntax in: ${file}`);
+              console.error(`   Error: ${err.message}\n`);
+              hasError = true;
+            }
+          });
+
+          if (hasError) {
+            process.exit(1);
+          } else {
+            console.log("\n✨ All configuration files are valid and well-formed!");
+          }
+          '
