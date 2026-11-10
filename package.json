@@ -1,0 +1,12 @@
+{
+  "name": "remote-config",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write \"**/*.{json,jsonc,md}\"",
+    "lint:format": "prettier --check \"**/*.{json,jsonc,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
+}
